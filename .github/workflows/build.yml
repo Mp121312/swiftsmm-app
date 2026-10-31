@@ -1,0 +1,32 @@
+name: Build TWA App
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install Bubblewrap
+        run: npm i -g @bubblewrap/cli
+      - name: Init Bubblewrap
+        run: |
+          mkdir twa
+          cd twa
+          npx @bubblewrap/cli init --manifest=https://www.swiftsmm.com/manifest.json --skipPwaValidation || true
+      - name: Build App
+        run: |
+          cd twa
+          npx @bubblewrap/cli build
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-app-files
+          path: twa/*.aab
