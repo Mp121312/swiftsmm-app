@@ -5,26 +5,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
           distribution: 'temurin'
+          java-version: '17'
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+
       - name: Install Bubblewrap
         run: npm i -g @bubblewrap/cli
+
+      - name: Configure Bubblewrap Paths
+        run: |
+          npx @bubblewrap/cli updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="/usr/local/lib/android/sdk"
+
       - name: Init Bubblewrap
         run: |
           mkdir twa
           cd twa
-          npx @bubblewrap/cli init --manifest=https://www.swiftsmm.com/manifest.json --skipPwaValidation || true
-      - name: Build App
+          npx @bubblewrap/cli init --manifest="https://www.swiftsmm.com/manifest.json" --skipPwaValidation
+
+      - name: Build TWA App
         run: |
           cd twa
-          npx @bubblewrap/cli build
+          npx @bubblewrap/cli build --skipPwaValidation
+        env:
+          CI: true
+          BUBBLEWRAP_KEYSTORE_PASSWORD: "your_keystore_password"
+          BUBBLEWRAP_KEY_PASSWORD: "your_key_password"
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
